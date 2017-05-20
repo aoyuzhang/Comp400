@@ -25,7 +25,7 @@ public class GradientDecentLinearRegression
 		
 		
 		/* We now apply gradient decent on the input examples.
-		 * We are now trying to minimize the cost function Sum((a1x[i]+a0-y[i])^2)
+		 * We are now trying to minimize the cost function (1/(2*nOfDataPoints))*SumOverAllDataPOoints((a1x[i]+a0-y[i])^2)
 		 * a0=a0-alpha(partial(costFunction)/partial(a0))
 		 * a1=a1-alpha(partial(costFunction)/partial(a0))
 		 */
