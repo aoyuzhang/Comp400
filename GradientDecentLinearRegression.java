@@ -14,9 +14,9 @@ public class GradientDecentLinearRegression
 		for(int i=0;i<nOfDataPoints;i++)
 		{
 			
-			x[i] = Math.random() * 100 + 1; // get random value for x ranging from 1 to 1000
+			x[i] = Math.random(); // get random value for x ranging from 1 to 1000
 			y[i]= aFunction(x[i]); // give y values according to x values and function aFunction defined below
-			System.out.println("x"+i+" is "+x[i]+" and y"+i+" is "+y[i]);
+			//System.out.println("x"+i+" is "+x[i]+" and y"+i+" is "+y[i]);
 		}
 		
 		
@@ -30,10 +30,10 @@ public class GradientDecentLinearRegression
 		 * a1=a1-alpha(partial(costFunction)/partial(a0))
 		 */
 		
-		final double alpha=0.2;// set the learning rate to be 0.5
-		double a0=2;
+		final double alpha=1;// set the learning rate to be 0.5
+		double a0=6;
 		double a1=3; // pick initial a0 and a1
-		double temp0=2; 
+		double temp0=6; 
 		double temp1=3; // used to store the the updated a0 and a1
 		int count=0; // use to count the number of iteration
 		do
@@ -45,13 +45,16 @@ public class GradientDecentLinearRegression
 			count++;
 			System.out.println("Iteration "+count+" The value of a0 is "+a0+" And it is updated to "
 					+temp0+" The value of a1 is "+a1+" And it is updated to "+temp1);
+            //System.out.prinltn("Iteration "+count+" The value vost is: "+1/200) 
 		}
 		while(Math.abs(temp0-a0)>=0.00001||Math.abs(temp1-a1)>=0.00001);
-		System.out.println("The estimated value of a0 is "+a0+" And the estimated value of a1 is"+a1);
+      
+		//System.out.println("The estimated value of a0 is "+a0+" And the estimated value of a1 is"+a1);
 
 		
 		
 	}
+  	
 	public static double updateA0(double[] x, double[] y,double alpha, double a0, double a1)
 	{
 		double sum=0; // use to store the result
@@ -68,11 +71,11 @@ public class GradientDecentLinearRegression
 		{
 			sum=sum+(a0+a1*x[i]-y[i])*x[i];
 		}
-		return a0-alpha*(sum/x.length);
+		return a1-alpha*(sum/x.length);
 	}
 	public static double aFunction(double x) // a function to produce random data
 	{
-		return Math.pow(x, 3)-9*x+1;
+		return 9*+1;
 	}
 
 }
