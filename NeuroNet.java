@@ -48,11 +48,13 @@ public class NeuroNet
 			
 	    	//BufferedImage grayscaleImage= new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_ARGB);
 	    	// int count=0;
-	    	for(int i=0;i<img.getWidth();i++)
+			System.out.println("The height of the rescaled image is:"+resizeImage.getHeight() );
+			System.out.println("The width of the rescaled image is:"+resizeImage.getWidth() );
+	    	for(int i=0;i<resizeImage.getWidth();i++)
 	    	{
-	    		for(int j=0;j<img.getHeight();j++)
+	    		for(int j=0;j<resizeImage.getHeight();j++)
 	    		{
-	    			Color c= new Color(img.getRGB(i, j));
+	    			Color c= new Color(resizeImage.getRGB(i, j));
 	    			rgbTable.clone()[i][j][0]=c.getRed();
 	    			rgbTable.clone()[i][j][1]=c.getGreen();
 	    			rgbTable.clone()[i][j][2]=c.getBlue();
@@ -68,6 +70,8 @@ public class NeuroNet
 	    {
 	    	System.out.println("Error: "+e);
 	    }
+	    //System.out.println("The matrix representation of the image is as follow:");
+	    //printMatrix(greyScaledImage);
 	    
 	    /*
 	     * Create neuro network
@@ -112,14 +116,41 @@ public class NeuroNet
 		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setBias(0.5); // set the bias to be 0.5
 		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setOutput(sigmoid(sum2d(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getFrames())+convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getBias()));
 		    	    
+		    	    //System.out.println("The weighted image with feature "+k+"and starting from width"+i+" and height "+j+" is as follow:");
+		    	    //printMatrix(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getFrames());
+		    	    
 		    	}
 		    }
 	    }
 
+	    /*pooling layer
 	    
 	    
 	    
 	}
+	/*
+	 * A function to print a matrix
+	 */
+	public static void printMatrix(double[][] m)
+    {
+      try{
+        int rows = m.length;
+        int columns = m[0].length;
+        String str = "|\t";
+
+        for(int i=0;i<rows;i++){
+          for(int j=0;j<columns;j++){
+            str += m[i][j] + "\t";
+          }
+
+          System.out.println(str + "|");
+          str = "|\t";
+        }
+        System.out.println();
+      }
+      catch(Exception e){System.out.println("Matrix is empty!!");}
+    }
+	
 	/* 
 	 * A function that multiply two matrices Entries
 	 */
