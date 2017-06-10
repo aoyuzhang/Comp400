@@ -35,17 +35,18 @@ public class NeuroNet
 	     */
 	    File originalImage = new File("C:\\Users\\hzhang127\\workspace\\NeuroNetwork\\image.jpg");
 	    BufferedImage img=null;
+	    double[][][] rgbTable=new double[IMG_WIDTH][IMG_HEIGHT][4]; // A table used to store the RGB values of the image's pixels
+	    double[][] greyScaledImage = new double[IMG_WIDTH][IMG_HEIGHT]; // A table to store greyScaled image.
 	    try
 	    {
 	    	img= ImageIO.read(originalImage);
 	    	int type = img.getType() == 0? BufferedImage.TYPE_INT_ARGB : img.getType();
 
+	    	/* resize the image*/
 			BufferedImage resizeImage = resizeImageWithHint(img, type);
 			ImageIO.write(resizeImage, "jpg", new File("C:\\Users\\hzhang127\\workspace\\NeuroNetwork\\img_fjords.jpg"));
 			
 	    	//BufferedImage grayscaleImage= new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_ARGB);
-	    	int[][][] rgbTable= new int[img.getWidth()][img.getHeight()][4]; // A table used to store the RGB values of the image's pixels
-	    	int[][] greyScaledImage= new int[img.getWidth()][img.getHeight()]; // A table to store greyScaled image.
 	    	// int count=0;
 	    	for(int i=0;i<img.getWidth();i++)
 	    	{
@@ -72,12 +73,12 @@ public class NeuroNet
 	     * Create neuro network
 	     */
 
-	    /* Convolutional layer frames*/
+	    /* Convolution layer frames*/
 	    int frameWidth=20;
 	    int frameHeight=20;
 	    int numberOfFeatures=10;
-	    ConvolutedLayerNode[][] convLayer = new ConvolutedLayerNode[numberOfFeatures][IMG_WIDTH/frameWidth*IMG_HEIGHT/frameHeight];
-	    //double[][][] frame= new double[IMG_WIDTH*IMG_HEIGHT/(frameWidth*frameHeight)][frameWidth][frameHeight]; // covoluted layer
+	    ConvolutedLayerNode[][][] convLayer = new ConvolutedLayerNode[numberOfFeatures][IMG_WIDTH/frameWidth][IMG_HEIGHT/frameHeight];
+	    //double[][][] frame= new double[IMG_WIDTH*IMG_HEIGHT/(frameWidth*frameHeight)][frameWidth][frameHeight]; // convoluted layer
 	    
 	    for(int k=0;k<numberOfFeatures;k++)
 	    {
@@ -85,24 +86,86 @@ public class NeuroNet
 		    {
 		    	for(int j=0;j<IMG_HEIGHT;j=j+frameHeight)
 		    	{
-		    		convLayer[k][]
+		    		double[][] tempFrame= new double[frameWidth][frameHeight]; // a frame to store each frames of the image after we divided it into frames
+		    		for(int x=0;x<frameWidth;x++)
+		    		{
+		    			for(int y=0;y<frameHeight;y++)
+		    			{
+		    				tempFrame[x][y]=greyScaledImage[i+x][j+y];
+		    			}
+		    		}
+		    		
+		    		
+		    		convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT]= new ConvolutedLayerNode();
+		    		/* create the weights*/
+		    	    double[][] weight= new double[frameWidth][frameHeight];
+		    	    Random randomGenerator= new Random();
+		    	    for(int n=0;n<frameWidth;n++)
+		    	    {
+		    	    	for(int m=0;m<frameHeight;m++)
+		    	    	{
+		    	    		weight[n][m]=randomGenerator.nextDouble();
+		    	    	}
+		    	    }
+		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setWeight(weight); // set the weight of the slides
+		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setFrames(multMatricesC(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getWeight(),tempFrame)); // set the weighted sum
+		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setBias(0.5); // set the bias to be 0.5
+		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setOutput(sigmoid(sum2d(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getFrames())+convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getBias()));
+		    	    
 		    	}
 		    }
 	    }
-	    double[][] weight= new double[frameWidth][frameHeight];
-	    Random randomGenerator= new Random();
-	    for(int i=0;i<frameWidth;i++)
-	    {
-	    	for(int j=0;j<frameHeight;j++)
-	    	{
-	    		weight[i][j]=randomGenerator.nextDouble();
-	    	}
-	    }
+
 	    
 	    
 	    
 	}
-	
+	/* 
+	 * A function that multiply two matrices Entries
+	 */
+	public static double[][] multMatricesC(double[][] A, double[][] B)
+	{
+		  int aRows = A.length;
+	      int aColumns = A[0].length;
+	      int bRows = B.length;
+	      int bColumns = B[0].length;
+	      if (aColumns != bColumns||aRows != bRows) 
+	      {
+	        throw new IllegalArgumentException("A:Rows: " + aColumns + " did not match B:Columns " + bRows + ".");
+	      }
+	      double[][] C = new double[aRows][bColumns];
+	      for (int i = 0; i < aRows; i++) 
+	      {
+	        for (int j = 0; j < bColumns; j++) 
+	        {
+	          C[i][j] = 0.00000;
+	        }
+	      }
+	      for (int i = 0; i < aRows; i++) 
+	      { // aRow
+	          for (int j = 0; j < bColumns; j++) 
+	          { // bColumn
+	        	  C[i][j]=A[i][j]*B[i][j];
+	          }
+	      }
+	      return C;
+	 }
+	/*
+	 * A function to compute the sum of entries in an matrix
+	 */
+	public static double sum2d (double[ ][ ] array2d)  
+	{
+	    double sum = 0;
+	    for (int row=0; row < array2d.length; row++)
+	    {
+	        for (int col=0; col < array2d[row].length; col++)
+	        {
+	            sum = sum + array2d [row][col];
+	        }
+	    }
+
+	    return sum;
+	}
 	/*
 	 *  Function used to saves an image in a url to src folder
 	 */
