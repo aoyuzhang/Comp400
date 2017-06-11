@@ -19,8 +19,8 @@
 
 public class NeuroNet 
 {
-	private static final int IMG_WIDTH = 600;
-	private static final int IMG_HEIGHT = 600;
+	private static final int IMG_WIDTH = 800;
+	private static final int IMG_HEIGHT = 800;
 	
 	public static void main(String[] args) throws Exception 
 	{
@@ -55,10 +55,10 @@ public class NeuroNet
 	    		for(int j=0;j<resizeImage.getHeight();j++)
 	    		{
 	    			Color c= new Color(resizeImage.getRGB(i, j));
-	    			rgbTable.clone()[i][j][0]=c.getRed();
-	    			rgbTable.clone()[i][j][1]=c.getGreen();
-	    			rgbTable.clone()[i][j][2]=c.getBlue();
-	    			rgbTable.clone()[i][j][3]=c.getAlpha();
+	    			rgbTable[i][j][0]=c.getRed(); 
+	    			rgbTable[i][j][1]=c.getGreen();
+	    			rgbTable[i][j][2]=c.getBlue();
+	    			rgbTable[i][j][3]=c.getAlpha();
 	    			greyScaledImage[i][j]=(c.getRed()+c.getGreen()+c.getBlue())/3; // Instead of using three values for each pixel, we take the weighted average. 
 //	    			count++;
 //	    			System.out.println(count+":"+"red is:"+rgbTable.clone()[i][j][0]+"alpha is"+rgbTable.clone()[i][j][3]+"" );
@@ -77,20 +77,24 @@ public class NeuroNet
 	     * Create neuro network
 	     */
 
-	    /* Convolution layer frames*/
+	    /* 1st Convolution layer frames*/
 	    int frameWidth=20;
 	    int frameHeight=20;
-	    int numberOfFeatures=10;
-	    ConvolutedLayerNode[][][] convLayer = new ConvolutedLayerNode[numberOfFeatures][IMG_WIDTH/frameWidth][IMG_HEIGHT/frameHeight];
+	    int numberOfFeatures=20;
+	    ConvolutedLayerNode[] convLayer = new ConvolutedLayerNode[numberOfFeatures]; // the nodes in a convoluted layer
 	    //double[][][] frame= new double[IMG_WIDTH*IMG_HEIGHT/(frameWidth*frameHeight)][frameWidth][frameHeight]; // convoluted layer
 	    
 	    for(int k=0;k<numberOfFeatures;k++)
 	    {
+	    	double[][] tempConvolutedFrame = new double[IMG_WIDTH/frameWidth][IMG_HEIGHT/frameHeight];// the convoluted frame associated with each feature
 		    for(int i=0;i<IMG_WIDTH;i=i+frameWidth)
 		    {
 		    	for(int j=0;j<IMG_HEIGHT;j=j+frameHeight)
 		    	{
-		    		double[][] tempFrame= new double[frameWidth][frameHeight]; // a frame to store each frames of the image after we divided it into frames
+		    		/*
+		    		 *  a frame to store each frames of the image after we divided it into frames
+		    		 */
+		    		double[][] tempFrame= new double[frameWidth][frameHeight]; 
 		    		for(int x=0;x<frameWidth;x++)
 		    		{
 		    			for(int y=0;y<frameHeight;y++)
@@ -98,32 +102,40 @@ public class NeuroNet
 		    				tempFrame[x][y]=greyScaledImage[i+x][j+y];
 		    			}
 		    		}
+		    		convLayer[k]= new ConvolutedLayerNode(); // Create a Convolutional layer node
 		    		
-		    		
-		    		convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT]= new ConvolutedLayerNode();
-		    		/* create the weights*/
+		    		/* 
+		    		 * create the weights by giving random datas
+		    		 */
 		    	    double[][] weight= new double[frameWidth][frameHeight];
 		    	    Random randomGenerator= new Random();
 		    	    for(int n=0;n<frameWidth;n++)
 		    	    {
 		    	    	for(int m=0;m<frameHeight;m++)
 		    	    	{
-		    	    		weight[n][m]=randomGenerator.nextDouble();
+		    	    		weight[n][m]=randomGenerator.nextDouble()*2-1;
 		    	    	}
 		    	    }
-		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setWeight(weight); // set the weight of the slides
-		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setFrames(multMatricesC(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getWeight(),tempFrame)); // set the weighted sum
-		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setBias(0.5); // set the bias to be 0.5
-		    	    convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].setOutput(sigmoid(sum2d(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getFrames())+convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getBias()));
+		    	    //printMatrix(weight);
 		    	    
-		    	    //System.out.println("The weighted image with feature "+k+"and starting from width"+i+" and height "+j+" is as follow:");
-		    	    //printMatrix(convLayer[k][i/IMG_WIDTH][j/IMG_HEIGHT].getFrames());
-		    	    
+		    	    /*
+		    	     * update convoluted frame
+		    	     */
+		    	    convLayer[k].setWeight(weight); // set the weight of the slides
+		    	    convLayer[k].setBias(0.5); // set the bias to be 0.5
+		    	    tempConvolutedFrame[i/frameWidth][j/frameHeight]= sigmoid(sum2d(multMatricesC(convLayer[k].getWeight(),tempFrame))); // store sum of weighed value in 
+		    	    //System.out.println("The weighted sum of frame starting from "+i+" width and "+j+" depth and feature number "+k+" is :"+tempConvolutedFrame[i/frameWidth][j/frameHeight]);
+
 		    	}
 		    }
+		    convLayer[k].setFrames(tempConvolutedFrame);
+    	    System.out.println("The weighted image with feature "+k+" is as follow:");
+    	    printMatrix(convLayer[k].getFrames());
 	    }
+	    
+	    /* Second convolutional layer*/
+	    
 
-	    /*pooling layer
 	    
 	    
 	    
