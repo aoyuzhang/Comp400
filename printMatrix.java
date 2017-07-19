@@ -3,12 +3,11 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
 
-
-public class printMatrix {
+public class PrintArray {
 	
-
-	public static List PoolConv(int[][] image, int filter_size){
-		List StackedMatrices = new ArrayList();
+	// Outputs arrayList of 2d matrices
+	public static ArrayList<int[]> PoolConv(int[][] image, int filter_size){
+		ArrayList<int[]> StackedMatrices = new ArrayList();
 		
 		// for every row:
 		for(int i=0;i<image.length;i+=filter_size){
@@ -21,15 +20,14 @@ public class printMatrix {
 				// for each row in the filter size:
 				for(int k = 0;k<filter_size;k++){
 					int[] slice_ = Arrays.copyOfRange(image[i+k], a, b);
-					filter.add(Arrays.toString(slice_));
+					//System.out.println("k is " + k + " " + Arrays.toString(slice_));
+					filter.add(slice_);
 				}
 				a+=filter_size;
 				b+=filter_size;
-				StackedMatrices.add(filter);
-
+				StackedMatrices.addAll(filter);
 			}
 		}
-		
 		return StackedMatrices;
 	}
 	
@@ -69,8 +67,51 @@ public class printMatrix {
         }
     }
     
-    // Pooling method:
+    // Pooling method: returns max of each 2d matrix in a 1D ArrayList format
+    public static ArrayList<int[]> poolingMax(ArrayList maxList, int filter_size){
+    	// List with maximums for each:
+    	ArrayList maxCompress = new ArrayList();
+    	// Convert arrayList to array type
+    	Object[] arrayInt = new Object[maxList.size()];
+    	arrayInt = maxList.toArray(arrayInt);
+    	
+    	// Specify local variables
+    	int f_size = filter_size*filter_size;	// filter area
+    	int a = 0;								// slice [a:b]
+    	int b = f_size;							// slice [a:b]
+
+    	for(int iter = 0; iter<(maxList.size()/f_size);iter++){
+    		Object[] slice  = Arrays.copyOfRange(arrayInt,a,b);
+    		Integer max = 0;
+
+    		for(int k = 0; k < slice.length; k++){
+    			Integer value = (Integer) slice[k];
+    			if(value > max){
+    				max = value;
+    			}
+    		}
+    		maxCompress.add(max);	// Add integer to max
+
+    		// Increment [a:b]
+    		a+=f_size;
+    		b+=f_size;
+    	}
+    	return maxCompress;
+    }
     
+    // Convert 1D list of maximums to 2D matrix of maximums
+    public static int[][] return2d(ArrayList max1d, int rows, int columns){
+		int[][] poolMatrix = new int[rows][columns];	// creates blank matrix with specified dimensions
+		int counter = 0;	// returns index of max1d 
+		for(int i = 0; i < (rows); i++){
+			for(int k = 0; k < columns; k++){
+				poolMatrix[i][k] = (int) max1d.get(counter);
+				counter++;
+				
+			}
+		}
+		return poolMatrix;
+    }
 	
 	public static void main(String args[]){
 
@@ -83,81 +124,30 @@ public class printMatrix {
 		System.out.println();
 				
 		// Testing PoolConv() method:
-		List stack = PoolConv(ListMatrix0,2);
+		ArrayList<int[]> stack = PoolConv(ListMatrix0,2);
 		
+		System.out.println("");
 		// Print result from PoolConv() method:
+		
+		//System.out.println(Arrays.toString(stack));
+		
+		int[] maxList;
+		ArrayList <Integer> max1d = new ArrayList();
+		
 		for(int i = 0; i<stack.size();i++){
-			System.out.println(stack.get(i));
-		}
-		
-		System.out.println();
-		//System.out.println(stack.get(0));
-		
-
-		
-		/*
-		List subList = new ArrayList();
-		subList = (List) stack.get(0);
-		System.out.println(subList);
-		System.out.println(((List) subList).size());
-		
-		int max = 0; 			// max value
-
-		for(int i=0;i<2;i++){	// For every row:
-			max = 0;
-			List row = new ArrayList();
-			row = (List) subList.get(i);
-			for(int k=0;k<2;k++){	// For every item:
-				int item;
-				item = (int) row.get(k);
-				if(k>max){
-					max = k;
-				}
+			maxList = (stack.get(i));
+			for(int k=0;k<maxList.length;k++){
+				max1d.add(maxList[k]);
 			}
 		}
 		
-		System.out.println(max);	// prints out max value
-		*/
-		/*
-		Object rowLost = new ArrayList();
-		rowList = ((ArrayList) john).get(0);
-		System.out.println(sam);
-		System.out.println(sam.getClass());
 		
-		List values = new ArrayList();
-		values.add(sam);
-		System.out.println(values);
-		List Pete = new ArrayList();
-		System.out.println(Pete);
-		
-		// Testing converting list to array
+		ArrayList<int[]> al = poolingMax(max1d, 2);
 
-		Object[] stringArray = Pete.toArray(new String[0]);
-		System.out.println(stringArray.getClass());
-		*/
-		
-		
-		/*
-		// stockList is of ArrayList type
-		List<String> stockList = new ArrayList<String>();
-		stockList.add("stock1");
-		stockList.add("stock2");
-		System.out.println(stockList);
-		
-		// stockArr is of Array type
-		String[] stockArr = new String[((List) john).size()];
-		// converts stockList to array
-		stockArr = (String[]) ((List) john).toArray(stockArr);
-		System.out.println(Arrays.toString(stockArr));
+		int[][] pm = return2d(al,3,3);
+		print2dMatrix(pm);
 
-		for(String s : stockArr)
-		    System.out.println(s);
-		
-		String[][] newList = new String[2][2];
-		newList[0] = stockArr;
-		System.out.println(Arrays.toString(newList[0]));
-		*/
+
 		
 	}
 }
- 
