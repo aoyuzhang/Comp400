@@ -3,8 +3,20 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
 
-public class PrintArray {
+/**
+ * This is the pooling class for the convolutional neural network
+ * Call poolMain() to return pooling
+ */
+
+public class PoolingFunctions {
 	
+	// Constructors
+	int[][] image;
+	int filter_size_constr;
+	public PoolingFunctions(int[][] image, int filter_size_constr){
+		this.image = image;
+		this.filter_size_constr = filter_size_constr;
+	}
 	// Outputs arrayList of 2d matrices
 	public static ArrayList<int[]> PoolConv(int[][] image, int filter_size){
 		ArrayList<int[]> StackedMatrices = new ArrayList();
@@ -15,12 +27,11 @@ public class PrintArray {
 			int b = filter_size;	// slice [a:b]
 			
 			// moving horizontally:
-			for(int j=0;j<(image.length/filter_size);j++){
+			for(int j=0;j<(image[0].length/filter_size);j++){
 				List filter = new ArrayList();
 				// for each row in the filter size:
 				for(int k = 0;k<filter_size;k++){
 					int[] slice_ = Arrays.copyOfRange(image[i+k], a, b);
-					//System.out.println("k is " + k + " " + Arrays.toString(slice_));
 					filter.add(slice_);
 				}
 				a+=filter_size;
@@ -31,19 +42,31 @@ public class PrintArray {
 		return StackedMatrices;
 	}
 	
-    // Adds a smaller matrix into a larger 0 filled matrix
-    public static int[][] fill0s(int[][] matrix2d, int height, int width){
-        int[][] blank_matrix = new int [height][width]; // Create blank matrix
-        for (int i = 0; i<matrix2d.length;i++){
-            for (int j = 0; j<matrix2d[i].length;j++){
+	// Returns height/width dimensions based on filter and image size
+	// inserts photo into blank matrix
+	public static int[][]imageFrame(int[][] matrix2d, int height_image, int width_image, int filter_size_height, int filter_size_width){
+		// Define dimensions
+		int new_height = height_image;
+		int new_width = width_image;
+		// Add additional columns/ rows if necessary:
+		if((height_image%filter_size_height)!= 0){		// Rows
+			 new_height = height_image + (filter_size_height - (height_image % filter_size_height));	// height of new image
+		}
+		if((width_image%filter_size_width)!= 0){		// Columns
+			new_width = width_image + (filter_size_width - (width_image % filter_size_height));		// width of new image
+		}
+		// Initialize blank matrix with repsective dimensions
+		int[][] blank_matrix = new int [new_height][new_width];
+		// Fill in blank matrix
+        for (int i = 0; i<matrix2d.length;i++){			// for each row
+            for (int j = 0; j<matrix2d[0].length;j++){	// for each cell
                 blank_matrix[i][j] = matrix2d[i][j];    // Index in blank matrix is value of smaller matrix
             }
         }
-
-        return blank_matrix;
-    }
-
+		return blank_matrix;	// return image with frame
+	}
 	
+
 	// Array with random numbers, specified by height/width
 	public static int[][] ArrayMatrix(int height_size, int width_size){
 		int [][] matrix = new int[height_size][width_size];
@@ -112,19 +135,17 @@ public class PrintArray {
 		}
 		return poolMatrix;
     }
-	
-	public static void main(String args[]){
-
-
-		// Initialize both images
-		int[][] ListMatrix = ArrayMatrix(5,5);
-		print2dMatrix(ListMatrix);
-		int[][] ListMatrix0 = fill0s(ListMatrix,6,6);
-		print2dMatrix(ListMatrix0);
+    
+    // Basically the "main function of this class"
+    public int[][] poolingMain(){
+    	// Fill 0s
+    	int[][] ListMatrix0 = imageFrame(image, image.length, image[0].length,
+    			filter_size_constr, filter_size_constr);
+		print2dMatrix(ListMatrix0);	// Fill with 0s
 		System.out.println();
-				
+		
 		// Testing PoolConv() method:
-		ArrayList<int[]> stack = PoolConv(ListMatrix0,2);
+		ArrayList<int[]> stack = PoolConv(ListMatrix0,filter_size_constr);
 		
 		System.out.println("");
 		// Print result from PoolConv() method:
@@ -140,14 +161,19 @@ public class PrintArray {
 				max1d.add(maxList[k]);
 			}
 		}
-		
-		
-		ArrayList<int[]> al = poolingMax(max1d, 2);
+				
+		// getting maximums
+		ArrayList<int[]> al = poolingMax(max1d, filter_size_constr);
 
-		int[][] pm = return2d(al,3,3);
+		// get dimensions for 2d pooling matrix
+		int pool_height = ListMatrix0.length/filter_size_constr;
+		int pool_width = ListMatrix0[0].length/filter_size_constr;
+		// convert into 2d matrix
+		int[][] pm = return2d(al,pool_height,pool_width);
 		print2dMatrix(pm);
 
+    	
+    	return pm;
+    }
 
-		
-	}
 }
